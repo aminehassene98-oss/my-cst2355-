@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,46 +8,22 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Lab 4',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Login Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -54,75 +31,147 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
-  var myFontSize = 30.0;
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      if (_counter <= 99.0){
-        _counter++;
-        myFontSize = _counter;
+  // make the controllers to get text from the boxes
+  late TextEditingController _loginController;
+  late TextEditingController _passwordController;
+
+  // get the encrypted helper tool
+  EncryptedSharedPreferences myPrefs = EncryptedSharedPreferences();
+
+  @override
+  void initState() {
+    super.initState();
+    // this will set up the controllers when the app starts
+    _loginController = TextEditingController();
+    _passwordController = TextEditingController();
+
+    // check if we have any saved data from last time
+    checkSavedData();
+  }
+
+  // yes so, this function looks for saved name and password
+  void checkSavedData() {
+    myPrefs.getString('user_name').then((String savedName) {
+      // if we found a name, put it in the box
+      if (savedName.isNotEmpty) {
+        setState(() {
+          _loginController.text = savedName;
+        });
+
+        // now check for the password too
+        myPrefs.getString('user_pass').then((String savedPass) {
+          if (savedPass.isNotEmpty) {
+            setState(() {
+              _passwordController.text = savedPass;
+            });
+          }
+        });
+
+        // show the message at the bottom that data was loaded
+        // use delayed so the screen has time to build first
+        Future.delayed(Duration.zero, () {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Loaded your saved login info!"))
+          );
+        });
       }
     });
   }
-void setNewValue(double value) {
-   setState((){
-   _counter = value;
-   myFontSize= value;
-});
-}
+
+  @override
+  void dispose() {
+    //  this will clean up memory when app closes
+    _loginController.dispose();
+
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-         
-          mainAxisAlignment: .center,
           children: [
-             Text('You have pushed the button this many times:', style: TextStyle(fontSize: myFontSize),
-             ),
-            Text(
-              '$_counter',
-              style: TextStyle(fontSize: myFontSize),
+            // this box is for the user name
+            TextField(
+              controller: _loginController,
+              decoration: const InputDecoration(
+                  labelText: "Login name",
+                  border: OutlineInputBorder()
+              ),
             ),
-            Slider(
 
-              value: _counter,
-              min:0.0,
-              max:100.0,
-              onChanged: (double value){
-                setNewValue(value);
-              }
-            )
+            // this adds some space between the boxes
+            const SizedBox(height: 20),
+
+            // thisbox is for the password
+            TextField(
+              controller: _passwordController,
+              obscureText: true, // hides the text like dots
+              decoration: const InputDecoration(
+                  labelText: "Password",
+                  border: OutlineInputBorder()
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // this the login button
+            ElevatedButton(
+              onPressed: () {
+                // this will show the popup asking to save
+                showSaveDialog();
+              },
+              child: const Text("Login"),
+            ),
+
           ],
+
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    );
+  }
+
+  // helper to show the alert window
+  void showSaveDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Save Login?"),
+          content: const Text("Do you want to save your username and password for next time?"),
+          actions: [
+            // no button clears everything
+            TextButton(
+
+              onPressed: () {
+                // delete the saved data
+                myPrefs.clear();
+                // close the window
+                Navigator.of(context).pop();
+              },
+              child: const Text("No"),
+            ),
+            // yes button saves everything
+            TextButton(
+              onPressed: () {
+                // save the text from the boxes to the phone
+                myPrefs.setString('user_name', _loginController.text);
+                myPrefs.setString('user_pass', _passwordController.text);
+                // this will close the window
+                Navigator.of(context).pop();
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

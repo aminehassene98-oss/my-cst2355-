@@ -1,215 +1,150 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const Lab3App());
+  runApp(const MyApp());
 }
 
-class Lab3App extends StatelessWidget {
-  const Lab3App({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CST2335 - Lab 3',
+      title: 'Lab 3 Recipe',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const Lab3HomePage(),
-      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'Recipe Index'),
     );
   }
 }
 
-class Lab3HomePage extends StatelessWidget {
-  const Lab3HomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CST2335 - Lab 3: Layouts'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Title
-            const Text(
-              'Layout Demonstration',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Center(
+              child: Text("BROWSE CATEGORIES",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.")
             ),
-            const SizedBox(height: 20),
+          ),
+          const Center(
+              child: Text("BY MEAT", style: TextStyle(fontWeight: FontWeight.bold))
+          ),
 
-            // Row 1: Two equal purple boxes
-            Expanded(
-              child: Row(
-                children: [
-                  // Box 1
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.purple[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Box 1',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+          // ⬇️ FIRST ROW - uses buildFoodItemWithOverlay (text ON image)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              buildFoodItemWithOverlay("BEEF", "images/beef.jpg"),
+              buildFoodItemWithOverlay("CHICKEN", "images/chicken.jpg"),
+              buildFoodItemWithOverlay("PORK", "images/pork.jpg"),
+              buildFoodItemWithOverlay("SEAFOOD", "images/seafood.jpg"),
+            ],
+          ),
 
-                  // Box 2
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.purple[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Box 2',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          const Center(
+              child: Text("BY COURSE", style: TextStyle(fontWeight: FontWeight.bold))
+          ),
 
-            const SizedBox(height: 16),
 
-            // Row 2: Single wide teal box
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.teal[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Box 3 (Wide)',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              buildFoodItem("Main Dishes", "images/main_dish.jpg"),
+              buildFoodItem("Salad", "images/salad.jpg"),
+              buildFoodItem("Sides", "images/side_dish.jpg"),
+              buildFoodItem("Crockpot", "images/crockpot.jpg"),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const Center(
+              child: Text("BY DESSERT", style: TextStyle(fontWeight: FontWeight.bold))
+          ),
 
-            // Row 3: Three equal cyan boxes
-            Expanded(
-              child: Row(
-                children: [
-                  // Box 4
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.cyan,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Box 4',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
 
-                  // Box 5
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.cyan,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Box 5',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              buildFoodItem("Ice Cream", "images/ice_cream.png"),
+              buildFoodItem("Brownie", "images/brownie.png"),
+              buildFoodItem("Pies", "images/pie.png"),
+              buildFoodItem("Cookies", "images/cookie.png"),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                  // Box 6
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.cyan,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Box 6',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 20),
-
-            // Layout explanation
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'This layout demonstrates:\n'
-                    '• 2 equal boxes in Row 1\n'
-                    '• 1 wide box in Row 2\n'
-                    '• 3 equal boxes in Row 3\n'
-                    '• Using Expanded for proportional sizing',
-                style: TextStyle(fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+  Widget buildFoodItemWithOverlay(String label, String imagePath) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CircleAvatar(
+          radius: 38,
+          backgroundImage: AssetImage(imagePath),
         ),
-      ),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            shadows: [
+              Shadow(
+                blurRadius: 4,
+                color: Colors.black54,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  //  for other rows (text BELOW the image)
+  Widget buildFoodItem(String label, String imagePath) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 38,
+          backgroundImage: AssetImage(imagePath),
+        ),
+        Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            )
+        ),
+      ],
     );
   }
 }

@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // this will set up the controllers when the app starts
+    // set up the controllers when the app starts
     _loginController = TextEditingController();
     _passwordController = TextEditingController();
 
@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
     checkSavedData();
   }
 
-  // yes so, this function looks for saved name and password
+  // this function looks for saved name and password
   void checkSavedData() {
     myPrefs.getString('user_name').then((String savedName) {
       // if we found a name, put it in the box
@@ -80,9 +80,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    //  this will clean up memory when app closes
+    // clean up memory when app closes
     _loginController.dispose();
-
     _passwordController.dispose();
     super.dispose();
   }
@@ -98,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // this box is for the user name
+            // box for the user name
             TextField(
               controller: _loginController,
               decoration: const InputDecoration(
@@ -107,10 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
 
-            // this adds some space between the boxes
+            // adds some space between the boxes
             const SizedBox(height: 20),
 
-            // thisbox is for the password
+            // box for the password
             TextField(
               controller: _passwordController,
               obscureText: true, // hides the text like dots
@@ -122,17 +121,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
             const SizedBox(height: 20),
 
-            // this the login button
+            // the login button
             ElevatedButton(
               onPressed: () {
-                // this will show the popup asking to save
+                // show the popup asking to save
                 showSaveDialog();
               },
               child: const Text("Login"),
             ),
-
           ],
-
         ),
       ),
     );
@@ -149,7 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: [
             // no button clears everything
             TextButton(
-
               onPressed: () {
                 // delete the saved data
                 myPrefs.clear();
@@ -164,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // save the text from the boxes to the phone
                 myPrefs.setString('user_name', _loginController.text);
                 myPrefs.setString('user_pass', _passwordController.text);
-                // this will close the window
+                // close the window
                 Navigator.of(context).pop();
               },
               child: const Text("Yes"),

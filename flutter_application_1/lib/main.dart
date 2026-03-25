@@ -1,141 +1,178 @@
 import 'package:flutter/material.dart';
-
-// The data model for our shopping items
-class ShoppingItem {
-  String name;
-  String quantity;
-  ShoppingItem(this.name, this.quantity);
-}
+import 'app_database.dart';
+import 'shopping_item.dart';
 
 void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: MyShoppingApp(),
-  ));
+  runApp(const MyApp());
 }
 
-class MyShoppingApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
-  State<MyShoppingApp> createState() => _MyShoppingAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Shopping List',
+      theme: ThemeData(
+
+        primarySwatch: Colors.blue,
+      ),
+      home: const ShoppingListPage(),
+    );
+  }
 }
 
-class _MyShoppingAppState extends State<MyShoppingApp> {
-  // My list to hold the shopping data
-  List<ShoppingItem> myItems = [];
-  // Controllers to get the text from the input boxes
-  final nameController = TextEditingController();
-  final qtyController = TextEditingController();
-// This function adds the item to the list and refreshes the UI
-  void addNewItem() {
-    if (nameController.text.isNotEmpty && qtyController.text.isNotEmpty) {
-      setState(() {
-        // Create new item and add it to the list
-        myItems.add(ShoppingItem(nameController.text, qtyController.text));
-        // Clear the boxes after adding so they are empty for the next one
-        nameController.clear();
-        qtyController.clear();
-      });
-    }
+class ShoppingListPage extends StatefulWidget {
+  const ShoppingListPage({super.key});
+
+  @override
+  State<ShoppingListPage> createState() => _ShoppingListPageState();
+}
+
+class _ShoppingListPageState extends State<ShoppingListPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController quantityController = TextEditingController();
+
+  AppDatabase? database;
+  List<ShoppingItem> shoppingList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
   }
-// This function shows the "Yes/No" delete box
-  void deleteItemDialog(int index) {
+
+  Future<void> loadData() async {
+    database = await $FloorAppDatabase
+        .databaseBuilder('shopping_database.db')
+        .build();
+
+    final items = await database!.shoppingItemDao.findAllItems();
+
+    setState(() {
+      shoppingList = items;
+    });
+  }
+
+  Future<void> addItem() async {
+    final String name = nameController.text.trim();
+    final String quantity = quantityController.text.trim();
+
+    if (name.isEmpty || quantity.isEmpty) {
+      return;
+    }
+
+    final item = ShoppingItem(ShoppingItem.ID++, name, quantity);
+
+    await database!.shoppingItemDao.insertItem(item);
+
+    setState(() {
+      shoppingList.add(item);
+    });
+
+    nameController.clear();
+    quantityController.clear();
+  }
+
+  Future<void> deleteItem(ShoppingItem item) async {
+    await database!.shoppingItemDao.deleteItem(item);
+
+    setState(() {
+      shoppingList.remove(item);
+    });
+  }
+
+  void confirmDelete(ShoppingItem item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Delete Item?"),
-        content: Text("Remove ${myItems[index].name}?"),
-        actions: [
-          // No button: just closes the pop-up
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("No")),
-          TextButton(
-            onPressed: () {
-              setState(() => myItems.removeAt(index));
-              Navigator.pop(context);//this closes the box
-            },
-            // Yes button: deletes the item and updates the screen
-            child: Text("Yes"),
-          ),
-        ],
-      ),
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Item'),
+          content: Text('Do you want to delete "${item.name}"?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await deleteItem(item);
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  // layout in your image
-  Widget ListPage() {
-    return Column(
-      children: [
-        // Top section for typing in items
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    hintText: "Type the item here",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: TextField(
-                  controller: qtyController,
-                  decoration: InputDecoration(
-                    hintText: "Type the quantity here",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              SizedBox(width: 5),
-              ElevatedButton(
-                onPressed: addNewItem,
-                child: Text("Click here"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple.withOpacity(0.1),
-                  foregroundColor: Colors.deepPurple,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Bottom section for showing the list
-        Expanded(
-          child: myItems.isEmpty
-              ? Center(child: Text("There are no items in the list"))
-              : ListView.builder(
-            itemCount: myItems.length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onLongPress: () => deleteItemDialog(index),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: Text(
-                    "${index + 1}: ${myItems[index].name}  quantity: ${myItems[index].quantity}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+  @override
+  void dispose() {
+    nameController.dispose();
+    quantityController.dispose();
+    database?.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Flutter Demo Home Page"),
-        backgroundColor: Colors.purple.shade100,
-        centerTitle: true,
+        title: const Text('Shopping List'),
       ),
-      body: ListPage(),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Item Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: quantityController,
+              decoration: const InputDecoration(
+                labelText: 'Quantity',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: addItem,
+              child: const Text('Add'),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: shoppingList.isEmpty
+                  ? const Center(
+                child: Text('No items in the shopping list'),
+              )
+                  : ListView.builder(
+                itemCount: shoppingList.length,
+                itemBuilder: (context, index) {
+                  final item = shoppingList[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(item.name),
+                      subtitle: Text('Quantity: ${item.quantity}'),
+                      onLongPress: () {
+                        confirmDelete(item);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

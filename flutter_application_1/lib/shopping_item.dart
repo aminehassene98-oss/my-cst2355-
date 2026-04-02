@@ -1,13 +1,15 @@
 import 'package:floor/floor.dart';
 
-@entity
+// This class represents one row in the ShoppingItem table
+@Entity(tableName: 'ShoppingItem')
 class ShoppingItem {
-  @primaryKey
+  @PrimaryKey()
   final int id;
 
   final String name;
   final String quantity;
 
+  // Used to manually generate the next ID
   static int ID = 1;
 
   ShoppingItem(this.id, this.name, this.quantity) {
